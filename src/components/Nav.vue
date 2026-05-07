@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
-import logo from '@/assets/logo.svg';
+import logo from '@/assets/logo.jpg';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import NavUser from '@/components/NavUser.vue';
 import { ui } from '@/configuration';

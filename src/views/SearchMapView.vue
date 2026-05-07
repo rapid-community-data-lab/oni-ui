@@ -299,10 +299,14 @@ const getInnerHTMLTooltip = (entity: EntityType) => {
   const type = entity.entityType;
   const href = getEntityUrl(entity);
 
+  const titleHtml = href
+    ? `<a href="${href}" data-route="${href}">${title}</a>`
+    : `<span>${title}</span>`;
+
   let innerHTML = `
     <div>
       <h3 class="mb-2 mt-1 text-2xl">
-        <a href="${href}" data-route="${href}">${title}</a>
+        ${titleHtml}
       </h3>
       <h4>Type: ${type}</h4>
   `;

@@ -80,20 +80,23 @@ export const parseContentSize = (value: string | number) => {
   return number * (unitMultipliers[unit as keyof typeof unitMultipliers] || 1);
 };
 
-export const getEntityUrl = (entity: EntityType) => {
-  const { entityType } = entity;
-
-  switch (entityType) {
-    case 'http://pcdm.org/models#Collection':
-      return `/collection?id=${entity.id}`;
-    case 'http://pcdm.org/models#Object':
-      return `/object?id=${entity.id}`;
-    case 'http://schema.org/MediaObject':
-      return `/file?id=${entity.id}`;
-    default:
-      throw new Error(`Unknown entitytype ${entityType}`);
-  }
+const ENTITY_ROUTES: Record<string, string> = {
+  'http://pcdm.org/models#Collection': '/collection',
+  'https://w3id.org/ldac/profile#Collection': '/collection',
+  'http://pcdm.org/models#Object': '/object',
+  'https://w3id.org/ldac/profile#Object': '/object',
+  'http://schema.org/MediaObject': '/file',
+  'https://w3id.org/ldac/profile#File': '/file',
 };
+
+export const getEntityUrl = (entity: EntityType): string | null => {
+  const route = ENTITY_ROUTES[entity.entityType];
+  if (!route) return null;
+  return `${route}?id=${encodeURIComponent(entity.id)}`;
+};
+
+export const hasEntityUrl = (entity: EntityType): boolean =>
+  entity.entityType in ENTITY_ROUTES;
 
 // NOTE: This assumes the array is never empty from a type perspective
 export const first = <T>(arr: T | T[]) => {

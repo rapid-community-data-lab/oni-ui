@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseContentSize } from '@/tools';
+import { getEntityUrl, hasEntityUrl, parseContentSize } from '@/tools';
+import type { EntityType } from '@/services/api';
+
+const makeEntity = (entityType: string, id = 'arcp://name,bundled'): EntityType =>
+  ({ id, entityType, name: 'x' }) as unknown as EntityType;
 
 describe('parseContentSize', () => {
   it('should return the number itself if it is a valid number and in bytes', () => {
@@ -51,5 +55,43 @@ describe('parseContentSize', () => {
   it('should handle edge cases for numeric parsing', () => {
     expect(parseContentSize('0 GB')).toBe(0); // Zero value
     expect(parseContentSize('0.0001 KB')).toBe(0.0001 * 1024); // Small decimal number
+  });
+});
+
+describe('getEntityUrl', () => {
+  it('routes Collection types (PCDM and LDaC profile) to /collection', () => {
+    expect(getEntityUrl(makeEntity('http://pcdm.org/models#Collection'))).toBe(
+      '/collection?id=arcp%3A%2F%2Fname%2Cbundled',
+    );
+    expect(getEntityUrl(makeEntity('https://w3id.org/ldac/profile#Collection'))).toBe(
+      '/collection?id=arcp%3A%2F%2Fname%2Cbundled',
+    );
+  });
+
+  it('routes Object types to /object', () => {
+    expect(getEntityUrl(makeEntity('http://pcdm.org/models#Object'))).toBe(
+      '/object?id=arcp%3A%2F%2Fname%2Cbundled',
+    );
+    expect(getEntityUrl(makeEntity('https://w3id.org/ldac/profile#Object'))).toBe(
+      '/object?id=arcp%3A%2F%2Fname%2Cbundled',
+    );
+  });
+
+  it('routes File / MediaObject to /file', () => {
+    expect(getEntityUrl(makeEntity('http://schema.org/MediaObject'))).toBe(
+      '/file?id=arcp%3A%2F%2Fname%2Cbundled',
+    );
+  });
+
+  it('returns null (does NOT throw) for unknown types like Person/Organization', () => {
+    expect(() => getEntityUrl(makeEntity('http://schema.org/Organization'))).not.toThrow();
+    expect(getEntityUrl(makeEntity('http://schema.org/Organization'))).toBeNull();
+    expect(getEntityUrl(makeEntity('http://schema.org/Person'))).toBeNull();
+    expect(getEntityUrl(makeEntity('http://schema.org/SoftwareApplication'))).toBeNull();
+  });
+
+  it('hasEntityUrl mirrors the routing decision', () => {
+    expect(hasEntityUrl(makeEntity('http://pcdm.org/models#Collection'))).toBe(true);
+    expect(hasEntityUrl(makeEntity('http://schema.org/Organization'))).toBe(false);
   });
 });

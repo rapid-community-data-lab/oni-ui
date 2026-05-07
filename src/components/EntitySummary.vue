@@ -10,6 +10,8 @@ import { getEntityUrl } from '@/tools';
 const { t } = useI18n();
 const { entity } = defineProps<{ entity: EntityType }>();
 
+const entityUrl = getEntityUrl(entity);
+
 // TODO: Rename this
 const { searchDetails = [] } = ui.search || {};
 </script>
@@ -20,10 +22,13 @@ const { searchDetails = [] } = ui.search || {};
       <el-col :xs="24" :sm="15" :md="15" :lg="17" :xl="19" :span="20">
         <el-row :align="'middle'">
           <h5 class="text-2xl font-medium">
-            <router-link :to="getEntityUrl(entity)"
+            <router-link v-if="entityUrl" :to="entityUrl"
               class="text-blue-600 hover:text-blue-800 visited:text-purple-600 wrap-break-word">
               {{ entity.identifiers?.shortIdentifier ? `${entity.identifiers.shortIdentifier} - ${entity.name || entity.id}` : entity.name || entity.id }}
             </router-link>
+            <span v-else class="text-gray-800 wrap-break-word">
+              {{ entity.identifiers?.shortIdentifier ? `${entity.identifiers.shortIdentifier} - ${entity.name || entity.id}` : entity.name || entity.id }}
+            </span>
           </h5>
         </el-row>
 
@@ -79,13 +84,13 @@ const { searchDetails = [] } = ui.search || {};
         </el-row>
 
         <el-row class="gap-2 flex">
-          <span class="after:content-[','] last:after:content-none" v-if="entity.counts.collections">
+          <span class="after:content-[','] last:after:content-none" v-if="entity.counts?.collections">
             {{ t('entity.collections') }} {{ entity.counts.collections }}
           </span>
-          <span class="after:content-[','] last:after:content-none" v-if="entity.counts.objects">
+          <span class="after:content-[','] last:after:content-none" v-if="entity.counts?.objects">
             {{ t('entity.objects') }} {{ entity.counts.objects }}
           </span>
-          <span class="after:content-[','] last:after:content-none" v-if="entity.counts.files">
+          <span class="after:content-[','] last:after:content-none" v-if="entity.counts?.files">
             {{ t('entity.files') }} {{ entity.counts.files }}
           </span>
         </el-row>

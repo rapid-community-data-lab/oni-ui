@@ -1,12 +1,27 @@
-# FIXME: This needs to be updated to run an arocapi wit data loaded
-# services:
-#   oni-ui:
-#     image: ghcr.io/nabu/oni-ui:latest
-#     build:
-#       context: ..
-#       dockerfile: docker/Dockerfile
-#     ports:
-#       - "8080:80"
-#     volumes:
-#       - ./configuration.json:/app/config/configuration.json
-#     restart: unless-stopped
+# oni-ui frontend stack.
+# Joins the shared external Docker network so nginx can reach the backend
+#
+# First-time setup (run once on the host):
+#   docker network create rapid-community-data-lab
+
+networks:
+  rapid-community-data-lab:
+    external: true
+    name: rapid-community-data-lab
+
+services:
+  oni-ui:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: oni-ui:local
+    container_name: ui
+    ports:
+      - "8081:80"
+    environment:
+      BACKEND_URL: "http://api:8080"
+    volumes:
+      - ../configuration.json:/configuration.json:ro
+    networks:
+      - rapid-community-data-lab
+    restart: unless-stopped

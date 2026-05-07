@@ -246,7 +246,16 @@ export class ApiService {
     }
 
     if ('error' in crateJson) {
-      return { error: crateJson.error };
+      const stub: RoCrate = {
+        '@id': entity.id,
+        '@type': [entity.entityType ?? 'Dataset'],
+        name: [entity.name ?? entity.id],
+        creditText: [],
+        identifier: [],
+        datePublished: [],
+        hasPart: [],
+      };
+      return { entity, metadata: stub };
     }
 
     return { entity, metadata: crateJson.metadata };

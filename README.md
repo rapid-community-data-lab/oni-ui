@@ -7,13 +7,129 @@ Current guide applies to Mac and Linux:
 1. Copy `configuration.sample.json` to `configuration.json` and modify as you wish
 1. Create vocabs by running `pnpm run setup:vocabs vocab.json`
 1. Start an API endpoint
-   1. `docker compose up` (NOTE: This does not exist yet, waiting on `arocapi` release)
-   1. Wait for API to be ready
+   1. From `../rapid-community-data-lab-api`: `docker network create rapid-community-data-lab` (one-time)
+   1. From `../rapid-community-data-lab-api`: `docker compose up -d`
+   1. Wait for API to be ready: `curl http://localhost:8080/version`
 1. Develop Portal:
    1. `cd src`
    1. `pnpm i`
    1. `pnpm run dev`
 1. Open a browser to <http://localhost:5173>
+
+## Run with Docker (production-like)
+
+The frontend ships its own self-contained Docker image (`docker/Dockerfile`)
+that is completely independent of the
+[`rapid-community-data-lab-api`](../rapid-community-data-lab-api) backend repo.
+At runtime the image's nginx proxies `/api/*` requests to a backend whose URL
+is supplied via the `BACKEND_URL` environment variable, making the same image
+deployable to local Docker Compose, Kubernetes / K3s on OpenStack, and GitLab
+CI/CD pipelines without rebuilding.
+
+### 1. Prerequisites
+
+- Docker 24+ and Docker Compose v2
+- The backend repo cloned at `../rapid-community-data-lab-api`
+- A `configuration.json` in this directory (copy from `configuration.sample.json`).
+  In `configuration.json` set the API endpoint to a relative path so requests
+  flow through the nginx proxy:
+
+   ```json
+   "api": {
+     "rocrate": { "endpoint": "/api", "path": "", "clientId": "am" }
+   }
+   ```
+
+### 2. Create the shared Docker network (one-time)
+
+The frontend container joins a shared **external** Docker network so that
+nginx can resolve the backend by Docker DNS at the hostname `api`:
+
+```bash
+docker network create rapid-community-data-lab
+```
+
+Both `docker/docker-compose.yml` (this project) and
+`../rapid-community-data-lab-api/docker-compose.yml` reference this network as
+`external: true`, so no project owns it.
+
+### 3. Start the backend stack
+
+```bash
+cd ../rapid-community-data-lab-api
+docker compose up -d        # postgres + opensearch + api
+curl -s http://localhost:8080/version
+```
+
+### 4. Build and start the frontend
+
+```bash
+cd ../oni-ui
+docker compose -f docker/docker-compose.yml up -d --build
+```
+
+This builds `oni-ui:local`, mounts the host `configuration.json` at
+`/configuration.json` inside the container, and publishes nginx on host port
+**8081**.
+
+### 5. Verify
+
+```bash
+curl -s http://localhost:8081/api/version            # proxied to backend
+curl -s http://localhost:8081/configuration.json     # served from host mount
+open http://localhost:8081                           # SPA in browser
+```
+
+You should see `{"version":"1.0.0"}` from the proxied backend call.
+
+### 6. Tear down
+
+```bash
+docker compose -f docker/docker-compose.yml down
+cd ../rapid-community-data-lab-api && docker compose down
+# Optional: remove the shared network
+docker network rm rapid-community-data-lab
+```
+
+## Runtime configuration (Docker / K8s)
+
+The frontend image is environment-agnostic. The only runtime knob is:
+
+| Variable      | Default               | Purpose                                         |
+|---------------|-----------------------|-------------------------------------------------|
+| `BACKEND_URL` | `http://api:8080`     | Upstream URL that nginx proxies `/api/*` to.    |
+
+At container start, `docker/entrypoint.sh` runs
+`envsubst '${BACKEND_URL}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf`
+and then execs nginx — so changing `BACKEND_URL` takes effect by recreating
+the pod, never by rebuilding the image.
+
+### Kubernetes / K3s on OpenStack via GitLab CI/CD
+
+Build and push the image in your GitLab pipeline, then in the oni-ui
+`Deployment` set:
+
+```yaml
+spec:
+  containers:
+    - name: oni-ui
+      image: registry.example.com/oni-ui:${CI_COMMIT_SHA}
+      env:
+        - name: BACKEND_URL
+          value: "http://rapid-community-data-lab-api.<namespace>.svc.cluster.local:8080"
+      volumeMounts:
+        - name: cfg
+          mountPath: /configuration.json
+          subPath: configuration.json
+  volumes:
+    - name: cfg
+      configMap:
+        name: oni-ui-config   # contains a "configuration.json" key
+```
+
+The frontend then talks to itself via the nginx `/api/` route, which proxies
+to the in-cluster backend Service — no CORS plumbing required, and the same
+image works in dev / staging / prod by varying `BACKEND_URL`.
 
 ## Configuration
 
