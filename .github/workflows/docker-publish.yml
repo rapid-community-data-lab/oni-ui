@@ -153,3 +153,24 @@ jobs:
           GHCR_REGISTRY: ${{ env.GHCR_REGISTRY }}
           IMAGE_NAME: ${{ steps.prepare.outputs.image_name }}
           VERSION: ${{ steps.meta.outputs.version }}
+
+  trigger-deploy:
+    name: Trigger infra deploy
+    needs: merge
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/new-api')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch deploy-dev to infra repo
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          # PAT with `repo` scope for the infra repo. Add as repo secret INFRA_DISPATCH_TOKEN.
+          token: ${{ secrets.INFRA_DISPATCH_TOKEN }}
+          repository: ${{ github.repository_owner }}/rapid-community-data-lab
+          event-type: deploy-dev
+          client-payload: |
+            {
+              "api_tag": "latest",
+              "ui_tag": "${{ github.sha }}",
+              "source": "${{ github.repository }}"
+            }
+
