@@ -170,7 +170,7 @@ jobs:
           # PAT with `repo` scope for the infra repo. Add as repo secret INFRA_DISPATCH_TOKEN.
           # NOTE: target is the infra repo (`rapid-community-data-lab`), NOT this repo.
           token: ${{ secrets.INFRA_DISPATCH_TOKEN }}
-          repository: ${{ github.repository_owner }}/rapid-community-data-lab
+          repository: ${{ github.repository_owner }}/oni-ui
           event-type: deploy-dev
           client-payload: |
             {
