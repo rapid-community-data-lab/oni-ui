@@ -1,13 +1,13 @@
+---
 name: Docker Image
 
 on:
   push:
-    # TODO: Remove this once we merge new-api into main
-    branches: ["new-api"]
+    branches: ["main"]
     # Publish semver tags as releases
     tags: ["v*.*.*"]
   pull_request:
-    branches: ["main", "new-api"]
+    branches: ["main"]
 
 env:
   GHCR_REGISTRY: ghcr.io
@@ -157,13 +157,18 @@ jobs:
   trigger-deploy:
     name: Trigger infra deploy
     needs: merge
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/new-api')
+    # Only dispatch a deploy on pushes to the default branch (matches the
+    # rapid-community-data-lab-api workflow). Tag pushes and PRs do not deploy.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Dispatch deploy-dev to infra repo
         uses: peter-evans/repository-dispatch@v3
         with:
           # PAT with `repo` scope for the infra repo. Add as repo secret INFRA_DISPATCH_TOKEN.
+          # NOTE: target is the infra repo (`rapid-community-data-lab`), NOT this repo.
           token: ${{ secrets.INFRA_DISPATCH_TOKEN }}
           repository: ${{ github.repository_owner }}/rapid-community-data-lab
           event-type: deploy-dev
