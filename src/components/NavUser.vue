@@ -10,7 +10,7 @@ const { isLoggedIn, user } = storeToRefs(useAuthStore());
 </script>
 
 <template>
-  <el-menu-item v-show="!isLoggedIn" @click="login">
+  <el-menu-item v-show="!isLoggedIn" index="login-action" @click="login">
     <div class="flex flex-col justify-center items-center">
       <el-tooltip class="box-item" effect="light" :content="t('auth.loginTooltip')" placement="bottom">
         <span>{{ t('auth.login') }}</span>
@@ -30,7 +30,7 @@ const { isLoggedIn, user } = storeToRefs(useAuthStore());
       </router-link>
     </el-menu-item>
 
-    <el-menu-item @click="authStore.logout">
+    <el-menu-item index="login-sub-logout" @click="authStore.logout">
       {{ t('auth.logout') }}
     </el-menu-item>
   </el-sub-menu>
