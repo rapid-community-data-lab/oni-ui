@@ -80,15 +80,144 @@ curl -s http://localhost:8081/configuration.json     # served from host mount
 open http://localhost:8081                           # SPA in browser
 ```
 
+### 5.1 Index the bundled test data
+
+Export `TOKEN_ADMIN` from `.env` first (the value is quoted in the file):
+
+```bash
+export TOKEN_ADMIN=$(grep ^TOKEN_ADMIN .env | cut -d= -f2- | tr -d '"')
+curl -L -X POST -H "Authorization: Bearer ${TOKEN_ADMIN}" \
+  http://localhost:8080/admin/index/
+```
+
+Indexing runs asynchronously in the background. To watch progress:
+
+```bash
+docker compose logs -f api | grep -E 'Indexing|level":50'
+```
+
+You should see `Indexing arcp://...` lines for each bundled crate. When
+indexing completes, the entity count is available via:
+
+```bash
+curl -s 'http://localhost:8080/entities?limit=1' | head -c 80
+# -> {"total":6194,...
+```
+
 You should see `{"version":"1.0.0"}` from the proxied backend call.
 
 ### 6. Tear down
 
+Stop and remove the running containers. By default this **keeps** your local
+test data (the PostgreSQL volume, the OpenSearch index, and the OCFL files),
+so the next `up` reuses it:
+
 ```bash
+# 1. Stop the frontend
+cd ../oni-ui
 docker compose -f docker/docker-compose.yml down
-cd ../rapid-community-data-lab-api && docker compose down
-# Optional: remove the shared network
+
+# 2. Stop the backend
+cd ../rapid-community-data-lab-api
+docker compose down
+
+# 3. (Optional) remove the shared network — only do this once both stacks are down
 docker network rm rapid-community-data-lab
+```
+
+### 7. Nuke local test data (clean slate)
+
+> ⚠️ **Destructive — local only.** The steps below permanently delete the local
+> PostgreSQL database, the OpenSearch index, and any OCFL data written at
+> runtime. They only touch your local Docker volumes and the local
+> `../rapid-community-data-lab-api/.ocfl` working directory. Never run these
+> against a shared or remote environment.
+
+All persistent test data is owned by the **backend** stack
+(`../rapid-community-data-lab-api`) — the oni-ui frontend container is
+stateless. The data lives in three places:
+
+| Data            | Where it is stored                                  | How it is removed                     |
+|-----------------|-----------------------------------------------------|---------------------------------------|
+| PostgreSQL rows | named volume `rapid-community-data-lab-api_postgres_data`   | `docker compose down -v`       |
+| OpenSearch index| named volume `rapid-community-data-lab-api_opensearch_data` | `docker compose down -v`       |
+| OCFL repository | bind mount `../rapid-community-data-lab-api/.ocfl`  | restore from git / regenerate         |
+
+#### 7.1. Stop the frontend
+
+```bash
+cd ../oni-ui
+docker compose -f docker/docker-compose.yml down
+```
+
+#### 7.2. Stop the backend and delete its data volumes
+
+The `-v` flag removes the named volumes declared in the backend compose file
+(`postgres_data` and `opensearch_data`), wiping the database and the search
+index:
+
+```bash
+cd ../rapid-community-data-lab-api
+docker compose down -v
+```
+
+Verify the volumes are gone (the command should print nothing):
+
+```bash
+docker volume ls --format '{{.Name}}' | grep rapid-community-data-lab-api
+```
+
+#### 7.3. Reset the OCFL repository
+
+The `.ocfl/` directory is a git-tracked bundled test corpus that the backend
+bind-mounts. Discard any files written at runtime and restore it to the
+committed state:
+
+```bash
+# still in ../rapid-community-data-lab-api
+git restore .ocfl          # revert tracked OCFL files to their committed state
+git clean -fd .ocfl        # remove any untracked OCFL files added at runtime
+```
+
+> To rebuild the OCFL corpus from scratch instead of restoring from git, delete
+> `.ocfl/data` and regenerate it from `test-data/` with the bundled script:
+> `OCFL_PATH=./.ocfl/data OCFL_SCRATCH=./.ocfl/scratch npx tsx make-ocfl.ts`.
+
+#### 7.4. (Optional) remove the shared network
+
+```bash
+docker network rm rapid-community-data-lab
+```
+
+### 8. Rebuild from a clean slate (repeatable)
+
+After nuking the data, bring everything back up and re-index from zero. This
+sequence is fully repeatable:
+
+```bash
+# 1. Shared network (no-op if it already exists)
+docker network create rapid-community-data-lab 2>/dev/null || true
+
+# 2. Backend with a fresh database and search index
+cd ../rapid-community-data-lab-api
+docker compose up -d
+curl -s http://localhost:8080/version          # wait until this responds
+
+# 3. Index the bundled test data.
+#    The index call returns HTTP 202 (Accepted) and runs asynchronously,
+#    so poll /entities until "total" is greater than 0.
+export TOKEN_ADMIN=$(grep ^TOKEN_ADMIN .env | cut -d= -f2- | tr -d '"')
+curl -L -X POST -H "Authorization: Bearer ${TOKEN_ADMIN}" \
+  http://localhost:8080/admin/index/                            # -> 202 Accepted
+until curl -s 'http://localhost:8080/entities?limit=1' | grep -q '"total":[1-9]'; do
+  sleep 2
+done
+curl -s 'http://localhost:8080/entities?limit=1' | head -c 80   # -> {"total":...}
+
+# 4. Frontend
+cd ../oni-ui
+docker compose -f docker/docker-compose.yml up -d --build
+open http://localhost:8081
 ```
 
 ## Runtime configuration (Docker / K8s)
