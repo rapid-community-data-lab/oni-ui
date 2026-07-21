@@ -211,5 +211,11 @@
     "objects": "Objects:",
     "relevanceScore": "Relevance Score:",
     "type": "Type:"
+  },
+  "file": {
+    "pdfPreviewDisabled": "Preview to this content is not available.",
+    "restricted": "Restricted",
+    "pdfDownloadRestrictedTitle": "Download restricted",
+    "pdfDownloadRestrictedBody": "Access to this content is restricted. Request for access available soon."
   }
 }

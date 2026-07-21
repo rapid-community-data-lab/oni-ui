@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { inject, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import AccessHelper from '@/components/AccessHelper.vue';
 import CSVWidget from '@/components/widgets/CSVWidget.vue';
 import EafTranscriptionWidget from '@/components/widgets/EafTranscriptionWidget.vue';
-import PDFWidget from '@/components/widgets/PDFWidget.vue';
 import PlainTextWidget from '@/components/widgets/PlainTextWidget.vue';
 import type { AnnotationRef, ApiService, EntityType, RoCrate } from '@/services/api';
 import { first } from '@/tools';
@@ -12,6 +12,12 @@ const api = inject<ApiService>('api');
 if (!api) {
   throw new Error('API instance not provided');
 }
+
+const { t } = useI18n();
+const restrictedDialogVisible = ref(false);
+const openRestrictedDialog = () => {
+  restrictedDialogVisible.value = true;
+};
 
 const {
   entity,
@@ -118,10 +124,8 @@ onMounted(() => {
       <el-col>
         <div class="container max-screen-lg mx-auto">
           <div v-if="entity.access.content">
-            <div v-if="isPdf" class="flex justify-center w-full">
-              <el-row :span="24">
-                <PDFWidget :src="streamUrl" />
-              </el-row>
+            <div v-if="isPdf" class="flex justify-center w-full p-4">
+              <el-alert type="info" :closable="false" show-icon :title="t('file.pdfPreviewDisabled')" />
             </div>
 
             <div v-else-if="isCsv" class="p-4 wrap-break-word">
@@ -168,9 +172,23 @@ onMounted(() => {
 
     <el-row class="flex justify-center" v-if="entity.access.content">
       <el-button-group class="m-2">
-        <el-button type="default" @click="handleDownload">Download File&nbsp;<font-awesome-icon icon="fa fa-download" />
+        <el-button v-if="isPdf" type="warning" plain @click="openRestrictedDialog">
+          {{ t('file.restricted') }}&nbsp;<font-awesome-icon icon="fa-solid fa-lock" />
+        </el-button>
+        <el-button v-else type="default" @click="handleDownload">Download File&nbsp;<font-awesome-icon
+            icon="fa fa-download" />
         </el-button>
       </el-button-group>
     </el-row>
+
+    <el-dialog v-model="restrictedDialogVisible" :title="t('file.pdfDownloadRestrictedTitle')" width="420px" align-center>
+      <div class="flex items-center gap-4">
+        <font-awesome-icon icon="fa-solid fa-lock" size="2x" />
+        <p>{{ t('file.pdfDownloadRestrictedBody') }}</p>
+      </div>
+      <template #footer>
+        <el-button @click="restrictedDialogVisible = false">{{ t('common.close') }}</el-button>
+      </template>
+    </el-dialog>
   </el-col>
 </template>
