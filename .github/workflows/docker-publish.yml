@@ -164,18 +164,22 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Dispatch deploy-dev to infra repo
+      - name: Prepare deploy payload
+        id: payload
+        run: |
+          echo "image=${GHCR_REGISTRY}/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+          echo "tag=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch deploy-production to kubernetes-cluster
         uses: peter-evans/repository-dispatch@v3
         with:
-          # PAT with `repo` scope for the infra repo. Add as repo secret INFRA_DISPATCH_TOKEN.
-          # NOTE: target is the infra repo (`rapid-community-data-lab`), NOT this repo.
           token: ${{ secrets.INFRA_DISPATCH_TOKEN }}
-          repository: ${{ github.repository_owner }}/oni-ui
-          event-type: deploy-dev
+          repository: ${{ github.repository_owner }}/kubernetes-cluster
+          event-type: deploy-production
           client-payload: |
             {
-              "api_tag": "latest",
-              "ui_tag": "${{ github.sha }}",
+              "image": "${{ steps.payload.outputs.image }}",
+              "tag": "${{ steps.payload.outputs.tag }}",
               "source": "${{ github.repository }}"
             }
 
