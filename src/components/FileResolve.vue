@@ -4,7 +4,6 @@ import { useI18n } from 'vue-i18n';
 import AccessHelper from '@/components/AccessHelper.vue';
 import CSVWidget from '@/components/widgets/CSVWidget.vue';
 import EafTranscriptionWidget from '@/components/widgets/EafTranscriptionWidget.vue';
-import PlainTextWidget from '@/components/widgets/PlainTextWidget.vue';
 import type { AnnotationRef, ApiService, EntityType, RoCrate } from '@/services/api';
 import { first } from '@/tools';
 
@@ -104,6 +103,7 @@ const isTxt =
   !isEaf &&
   (plainEncodingFormats.some((ef) => ef.startsWith('text')) || ['txt', 'html', 'xml', 'flab'].includes(extension));
 const isPdf = plainEncodingFormats.some((ef) => ef.endsWith('pdf')) || extension === 'pdf';
+const isRestricted = isPdf || (isTxt && !isCsv);
 const isAudio = encodingFormat.some((f) => f?.startsWith('audio'));
 const isVideo = encodingFormat.some((f) => f?.startsWith('video'));
 const mediaTag = isVideo ? 'video' : 'audio';
@@ -124,8 +124,8 @@ onMounted(() => {
       <el-col>
         <div class="container max-screen-lg mx-auto">
           <div v-if="entity.access.content">
-            <div v-if="isPdf" class="flex justify-center w-full p-4">
-              <el-alert type="info" :closable="false" show-icon :title="t('file.pdfPreviewDisabled')" />
+            <div v-if="isRestricted" class="flex justify-center w-full p-4">
+              <el-alert type="info" :closable="false" show-icon :title="t('file.previewDisabled')" />
             </div>
 
             <div v-else-if="isCsv" class="p-4 wrap-break-word">
@@ -134,10 +134,6 @@ onMounted(() => {
 
             <div v-else-if="isEaf" class="p-4">
               <EafTranscriptionWidget :src="streamUrl" v-if="streamUrl" show-header />
-            </div>
-
-            <div v-else-if="isTxt" class="p-4 wrap-break-word">
-              <PlainTextWidget :src="streamUrl" v-if="streamUrl" />
             </div>
 
             <div v-else-if="isAudio || isVideo" class="flex flex-col items-center">
@@ -172,7 +168,7 @@ onMounted(() => {
 
     <el-row class="flex justify-center" v-if="entity.access.content">
       <el-button-group class="m-2">
-        <el-button v-if="isPdf" type="warning" plain @click="openRestrictedDialog">
+        <el-button v-if="isRestricted" type="warning" plain @click="openRestrictedDialog">
           {{ t('file.restricted') }}&nbsp;<font-awesome-icon icon="fa-solid fa-lock" />
         </el-button>
         <el-button v-else type="default" @click="handleDownload">Download File&nbsp;<font-awesome-icon
@@ -181,10 +177,10 @@ onMounted(() => {
       </el-button-group>
     </el-row>
 
-    <el-dialog v-model="restrictedDialogVisible" :title="t('file.pdfDownloadRestrictedTitle')" width="420px" align-center>
+    <el-dialog v-model="restrictedDialogVisible" :title="t('file.downloadRestrictedTitle')" width="420px" align-center>
       <div class="flex items-center gap-4">
         <font-awesome-icon icon="fa-solid fa-lock" size="2x" />
-        <p>{{ t('file.pdfDownloadRestrictedBody') }}</p>
+        <p>{{ t('file.downloadRestrictedBody') }}</p>
       </div>
       <template #footer>
         <el-button @click="restrictedDialogVisible = false">{{ t('common.close') }}</el-button>

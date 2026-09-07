@@ -155,27 +155,27 @@ jobs:
           VERSION: ${{ steps.meta.outputs.version }}
 
   trigger-deploy:
-    name: Trigger infra deploy
+    name: Trigger GitOps deploy (Flux)
     needs: merge
-    # Only dispatch a deploy on pushes to the default branch (matches the
-    # rapid-community-data-lab-api workflow). Tag pushes and PRs do not deploy.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
-      - name: Dispatch deploy-dev to infra repo
+      - name: Compute image and tag
+        id: img
+        run: |
+          echo "image=${GHCR_REGISTRY}/$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+          echo "tag=sha-$(echo "${GITHUB_SHA}" | cut -c1-7)" >> "$GITHUB_OUTPUT"
+      - name: Dispatch deploy-production to GitOps repo
         uses: peter-evans/repository-dispatch@v3
         with:
-          # PAT with `repo` scope for the infra repo. Add as repo secret INFRA_DISPATCH_TOKEN.
-          # NOTE: target is the infra repo (`rapid-community-data-lab`), NOT this repo.
           token: ${{ secrets.INFRA_DISPATCH_TOKEN }}
-          repository: ${{ github.repository_owner }}/oni-ui
-          event-type: deploy-dev
+          repository: ${{ github.repository_owner }}/kubernetes-cluster
+          event-type: deploy-production
           client-payload: |
             {
-              "api_tag": "latest",
-              "ui_tag": "${{ github.sha }}",
-              "source": "${{ github.repository }}"
+              "image": "${{ steps.img.outputs.image }}",
+              "tag": "${{ steps.img.outputs.tag }}"
             }
 
