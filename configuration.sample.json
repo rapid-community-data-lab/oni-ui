@@ -13,16 +13,16 @@
       "enabled": true,
       "hero": {
         "title": "Welcome to the Discovery Portal",
-        "subtitle": "Explore language data collections from across the Pacific and Australia",
+        "subtitle": "Make public interest documents more accessible for researchers across Australia",
         "backgroundClass": "bg-gray-100"
       },
-      "content": "<p class='text-gray-600'>Discover and explore our extensive collection of language resources.</p>"
+      "content": "<p class='text-gray-600'>Discover and explore proceedings of Federal, State and Territory parliaments (Hansards), and other resources.</p>"
     },
     "logoFilename": "logo.jpg",
     "navHeight": "80px",
     "showEllipsis": true,
     "help": {
-      "aboutText": "This is an Oni Data Portal publication. This portal provides access to a repository of language data, it is provided by the Reusable and Accessible Public Interest Documents for the Community Data Lab [RAPID - CDL](<a href='https://rapid-community-data-lab.edu.au'>https://rapid-community-data-lab.edu.au</a>).",
+      "aboutText": "This is an Oni Data Portal publication. This portal provides access to a repository of public interest documents, it is provided by the Reusable and Accessible Public Interest Documents for the Community Data Lab [RAPID - CDL](<a href='https://rapid-community-data-lab.edu.au'>https://rapid-community-data-lab.edu.au</a>).",
       "citationText": "CITE AS: Oni Platform. A project with co-investment from Australian Research Data Commons, The University of Queensland, The University of Melbourne, The University of Sydney, Monash University, First Languages Australia and AARNet."
     },
     "subHelpLinks": [
