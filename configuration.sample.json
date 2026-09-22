@@ -16,7 +16,7 @@
         "subtitle": "Make public interest documents more accessible for researchers across Australia",
         "backgroundClass": "bg-gray-100"
       },
-      "content": "<p class='text-gray-600'>Discover and explore proceedings of Federal, State and Territory parliaments (Hansards), and other resources.</p>"
+      "content": "<p class='text-gray-600'>Discover and explore proceedings of Federal, State and Territory parliaments, and other resources.</p>"
     },
     "logoFilename": "logo.jpg",
     "navHeight": "80px",
