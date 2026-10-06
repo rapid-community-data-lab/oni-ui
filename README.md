@@ -340,6 +340,9 @@ The splash screen appears when users first visit the portal.
 | `ui.topNavItems[].route` | string | Yes | Route path or query string for the navigation item |
 | `ui.topNavItems[].display` | string | Yes | Display text for the navigation item |
 | `ui.topNavHome` | string | No | Custom home route override |
+| `ui.adminPortal` | object | No | External Admin portal link displayed beside Home |
+| `ui.adminPortal.href` | URL | Yes | Environment-specific Admin portal URL |
+| `ui.adminPortal.display` | string | Yes | Admin portal link text |
 
 **Example:**
 

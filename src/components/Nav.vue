@@ -14,6 +14,7 @@ const i18nStore = useI18nStore();
 
 const {
   login: { enabled: isLoginEnabled },
+  adminPortal,
   shortTitle = 'Oni',
   logoFilename,
   navHeight = '50px',
@@ -45,17 +46,19 @@ const showLanguageSwitcher = computed(() => {
 
     <div class="flex-auto" />
 
-    <el-menu-item v-for="topNavItem of topNavItems" :index="topNavItem.route" :router="topNavItem.route">
-      <router-view :key="topNavItem.route">
-        <el-row :gutter="10" class="flex items-center justify-center">
-          <el-col :span="24">
-            <div class="flex flex-col justify-center items-center" :style="{ 'height': navHeight }">
-              <span>{{ topNavItem.display }}</span>
-            </div>
-          </el-col>
-        </el-row>
-      </router-view>
-    </el-menu-item>
+    <template v-for="topNavItem of topNavItems" :key="topNavItem.route">
+      <el-menu-item :index="topNavItem.route" :router="topNavItem.route">
+        <router-view :key="topNavItem.route">
+          <el-row :gutter="10" class="flex items-center justify-center">
+            <el-col :span="24">
+              <div class="flex flex-col justify-center items-center" :style="{ 'height': navHeight }">
+                <span>{{ topNavItem.display }}</span>
+              </div>
+            </el-col>
+          </el-row>
+        </router-view>
+      </el-menu-item>
+    </template>
 
     <NavUser v-if="isLoginEnabled" />
 
@@ -71,6 +74,12 @@ const showLanguageSwitcher = computed(() => {
           {{ t('nav.about') }}
         </router-link>
       </el-menu-item>
+
+      <li v-if="adminPortal" class="el-menu-item">
+        <a class="w-full block" :href="adminPortal.href">
+          {{ adminPortal.display }}
+        </a>
+      </li>
 
       <template v-for="helpLink of subHelpLinks">
         <li class="el-menu-item">
