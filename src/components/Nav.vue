@@ -30,8 +30,6 @@ const logoSrc = logoFilename || logo;
 const showLanguageSwitcher = computed(() => {
   return i18nStore.availableLocales.length > 1;
 });
-
-const isExternalLink = (route: string) => /^(https?:)?\/\//.test(route);
 </script>
 
 <template>
@@ -46,22 +44,10 @@ const isExternalLink = (route: string) => /^(https?:)?\/\//.test(route);
       </router-view>
     </el-menu-item>
 
-    <el-menu-item v-if="adminPortal" index="admin-portal">
-      <a :href="adminPortal.href">
-        {{ adminPortal.display }}
-      </a>
-    </el-menu-item>
-
     <div class="flex-auto" />
 
     <template v-for="topNavItem of topNavItems" :key="topNavItem.route">
-      <el-menu-item v-if="isExternalLink(topNavItem.route)" :index="topNavItem.route">
-        <a :href="topNavItem.route">
-          {{ topNavItem.display }}
-        </a>
-      </el-menu-item>
-
-      <el-menu-item v-else :index="topNavItem.route" :router="topNavItem.route">
+      <el-menu-item :index="topNavItem.route" :router="topNavItem.route">
         <router-view :key="topNavItem.route">
           <el-row :gutter="10" class="flex items-center justify-center">
             <el-col :span="24">
@@ -88,6 +74,12 @@ const isExternalLink = (route: string) => /^(https?:)?\/\//.test(route);
           {{ t('nav.about') }}
         </router-link>
       </el-menu-item>
+
+      <li v-if="adminPortal" class="el-menu-item">
+        <a class="w-full block" :href="adminPortal.href">
+          {{ adminPortal.display }}
+        </a>
+      </li>
 
       <template v-for="helpLink of subHelpLinks">
         <li class="el-menu-item">
