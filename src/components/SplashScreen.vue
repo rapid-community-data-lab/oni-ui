@@ -15,10 +15,17 @@ const splashStore = useSplashStore();
 
 const centerDialogVisible = ref(!!splash && !splashStore.splashed);
 
-const textStyles = splash?.textClass || 'text-5xl text-[#F4EDE4] pb-10';
+const textStyles = splash?.textClass || 'text-5xl text-[#3E0323] pb-10';
 const backgroundImage = splash?.image ? new URL(`/src/assets/${splash.image}`, import.meta.url).href : undefined;
-const styles = backgroundImage ? `background-image: url(${backgroundImage});` : '';
-const bgClasses = splash?.image ? 'bg-repeat' : 'bg-sky-300';
+const styles = backgroundImage
+  ? {
+      backgroundImage: `url(${backgroundImage})`,
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      backgroundSize: 'cover',
+    }
+  : undefined;
+const bgClasses = backgroundImage ? '' : 'bg-sky-300';
 
 const closeDialog = () => {
   splashStore.splashed = true;

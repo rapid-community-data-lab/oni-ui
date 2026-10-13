@@ -4,8 +4,8 @@
     "shortTitle": "Oni",
     "splash": {
       "text": "Oni acknowledges all Aboriginal and Torres Strait Islander Traditional Custodians of Country and recognises their continuing connection to land, sea, culture and community. We pay our respects to Elders past and present.",
-      "textClass": "text-5xl text-[#F4EDE4] pb-10",
-      "image": "splash-background-1.png",
+      "textClass": "text-5xl text-[#3E0323] pb-10",
+      "image": "d-bg-banner.jpg",
       "enabled": true,
       "launcher": "Acknowledgement of Country"
     },

@@ -324,7 +324,7 @@ The splash screen appears when users first visit the portal.
   "ui": {
     "splash": {
       "text": "Welcome to our portal...",
-      "textClass": "text-5xl text-[#F4EDE4] pb-10",
+      "textClass": "text-5xl text-[#3E0323] pb-10",
       "image": "splash-background-1.png",
       "launcher": "Acknowledgement of Country"
     }
