@@ -45,7 +45,7 @@ const {
     :updatePageSize="updatePageSize" :setSearchParams="setSearchParams" :advancedSearchEnabled="advancedSearchEnabled"
     :advancedSearchLines="advancedSearchLines">
     <div v-for="entity of entities" :key="entity.id" class="z-0 mt-0 mb-4 w-full" v-loading="isLoading">
-      <EntitySummary :entity="entity" />
+      <EntitySummary :entity="entity" searchResult />
     </div>
   </SearchLayout>
 </template>

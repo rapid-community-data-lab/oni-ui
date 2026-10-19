@@ -71,7 +71,8 @@ export type EntityType = {
   communicationMode: 'Song' | 'Spoken';
   mediaType: Array<string>;
   accessControl: 'Public' | 'Restricted';
-  searchExtra?: { score: number; highlight: Record<string, string[]> };
+  isBasedOn?: string[];
+  searchExtra?: { score: number; highlight?: Record<string, string[]> };
 };
 
 type ApiErrorBody = {

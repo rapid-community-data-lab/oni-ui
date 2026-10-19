@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import MediaTypeIcon from '@/components//widgets/MediaTypeIcon.vue';
 import AccessControlIcon from '@/components/widgets/AccessControlIcon.vue';
@@ -8,9 +9,13 @@ import type { EntityType } from '@/services/api';
 import { getEntityUrl } from '@/tools';
 
 const { t } = useI18n();
-const { entity } = defineProps<{ entity: EntityType }>();
+const { entity, searchResult = false } = defineProps<{ entity: EntityType; searchResult?: boolean }>();
 
 const entityUrl = getEntityUrl(entity);
+
+const snippets = computed(() => entity.searchExtra?.highlight?._text ?? []);
+
+const isWebUrl = (value: string) => /^https?:\/\//i.test(value);
 
 // TODO: Rename this
 const { searchDetails = [] } = ui.search || {};
@@ -59,8 +64,21 @@ const { searchDetails = [] } = ui.search || {};
           </router-link>
         </el-row>
 
+        <el-row align="middle" v-if="entity.isBasedOn?.length">
+          <p class="font-normal text-gray-700">
+            {{ t('entity.isBasedOn') }}&nbsp;
+          </p>
+          <template v-for="source of entity.isBasedOn" :key="source">
+            <a v-if="isWebUrl(source)" :href="source" target="_blank" rel="noopener noreferrer"
+              class="text-sm m-2 underline text-blue-600 hover:text-blue-800 visited:text-purple-600 break-all">
+              {{ source }}
+            </a>
+            <span v-else class="text-sm m-2 text-gray-700 break-all">{{ source }}</span>
+          </template>
+        </el-row>
+
         <el-row align="middle"
-          v-if="entity.rootCollection && entity.rootCollection?.id !== entity.memberOf?.id && entity.rootCollection?.id !== entity.id"
+          v-if="!searchResult && entity.rootCollection && entity.rootCollection?.id !== entity.memberOf?.id && entity.rootCollection?.id !== entity.id"
           class="pt-2">
           <p class="font-normal text-gray-700">
             {{ t('entity.in') }}&nbsp;
@@ -70,7 +88,7 @@ const { searchDetails = [] } = ui.search || {};
           </router-link>
         </el-row>
 
-        <el-row align="middle">
+        <el-row align="middle" v-if="!searchResult">
           <p class="font-normal text-gray-700">
             ID: &nbsp;
           </p>
@@ -95,9 +113,10 @@ const { searchDetails = [] } = ui.search || {};
           </span>
         </el-row>
 
-        <el-row align="middle" v-if="entity.searchExtra?.highlight">
+        <el-row align="middle" v-if="snippets.length">
           <ul>
-            <li v-for="hl of Object.values(entity.searchExtra.highlight || {}).flat()" v-html="'...' + hl + '...'" class="p-2">
+            <li v-for="snippet of snippets" v-html="'...' + snippet + '...'"
+              class="p-2 [&_mark]:bg-yellow-300 [&_mark]:font-bold [&_mark]:text-inherit">
             </li>
           </ul>
         </el-row>
