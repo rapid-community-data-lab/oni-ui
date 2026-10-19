@@ -26,7 +26,7 @@
     },
     "showEllipsis": true,
     "help": {
-      "aboutText": "This is an Oni Data Portal publication. This portal provides access to a repository of public interest documents, it is provided by the Reusable and Accessible Public Interest Documents for the Community Data Lab [RAPID - CDL](<a href='https://rapid-cdl.edu.au'>https://rapid-cdl.edu.au</a>).",
+      "aboutText": "This is an Oni Data Portal publication. This portal provides access to a repository of public interest documents, it is provided by the Reusable and Accessible Public Interest Documents for the Community Data Lab [RAPID - CDL](<a href='https://data.rapid-cdl.edu.au'>https://data.rapid-cdl.edu.au</a>).",
       "citationText": "CITE AS: Oni Platform. A project with co-investment from Australian Research Data Commons, The University of Queensland, The University of Melbourne, The University of Sydney, Monash University, First Languages Australia and AARNet."
     },
     "subHelpLinks": [
