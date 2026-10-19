@@ -139,27 +139,41 @@ const fetchdata = async () => {
 
   isLoading.value = true;
 
-  const { entity: e, metadata: md } = await api.getEntity(id);
-  if (!md) {
-    handleMissingEntity();
+  try {
+    const { entity: e, metadata: md } = await api.getEntity(id);
+    if (!md) {
+      handleMissingEntity();
 
-    return;
+      return;
+    }
+
+    gtm?.trackEvent({
+      event: '/object',
+      category: 'object',
+      label: 'loaded-object',
+      value: id,
+    });
+
+    metadata.value = md;
+    entity.value = e;
+    populate(md);
+
+    const [filesResult, membersResult] = await Promise.allSettled([fetchFiles(id), fetchMembers()]);
+
+    if (filesResult.status === 'rejected') {
+      files.value = [];
+      console.error(filesResult.reason);
+    }
+
+    if (membersResult.status === 'rejected') {
+      allMembers.value = [];
+      console.error(membersResult.reason);
+    }
+  } catch (e) {
+    console.error(e);
+  } finally {
+    isLoading.value = false;
   }
-
-  gtm?.trackEvent({
-    event: '/object',
-    category: 'object',
-    label: 'loaded-object',
-    value: id,
-  });
-
-  metadata.value = md;
-  entity.value = e;
-  populate(md);
-
-  await Promise.all([fetchFiles(id), fetchMembers()]);
-
-  isLoading.value = false;
 };
 
 const updatePage = (page: number) => {

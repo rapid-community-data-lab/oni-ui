@@ -365,6 +365,16 @@ export class ApiService {
     return response;
   }
 
+  async #readJson<T>(response: Response): Promise<T | ApiErrorBody> {
+    const text = await response.text();
+
+    try {
+      return JSON.parse(text) as T | ApiErrorBody;
+    } catch {
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`.trim());
+    }
+  }
+
   #throwOnApiError(data: unknown): never {
     if (data && typeof data === 'object' && 'error' in data) {
       const body = data as ApiErrorBody;
@@ -390,7 +400,7 @@ export class ApiService {
       throw new Error('Not authorised');
     }
 
-    const data = (await response.json()) as T | ApiErrorBody;
+    const data = await this.#readJson<T>(response);
 
     if (response.status !== 200) {
       this.#throwOnApiError(data);
@@ -411,7 +421,7 @@ export class ApiService {
       return { error: 'Not found' };
     }
 
-    const data = (await response.json()) as T | ApiErrorBody;
+    const data = await this.#readJson<T>(response);
 
     if (response.status !== 200) {
       this.#throwOnApiError(data);
