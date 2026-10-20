@@ -534,7 +534,7 @@ The following routes are available for use in navigation items:
       "name": "Name",
       "description": "Description",
       "inLanguage": "Language",
-      "text": "Text"
+      "_text": "Text"
     }
   }
 }

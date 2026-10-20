@@ -15,8 +15,6 @@ const entityUrl = getEntityUrl(entity);
 
 const snippets = computed(() => entity.searchExtra?.highlight?._text ?? []);
 
-const isWebUrl = (value: string) => /^https?:\/\//i.test(value);
-
 // TODO: Rename this
 const { searchDetails = [] } = ui.search || {};
 </script>
@@ -62,19 +60,6 @@ const { searchDetails = [] } = ui.search || {};
             :to="'/collection?id=' + encodeURIComponent(entity.memberOf.id)">
             {{ entity.memberOf.name || entity.memberOf.id }}
           </router-link>
-        </el-row>
-
-        <el-row align="middle" v-if="entity.isBasedOn?.length">
-          <p class="font-normal text-gray-700">
-            {{ t('entity.isBasedOn') }}&nbsp;
-          </p>
-          <template v-for="source of entity.isBasedOn" :key="source">
-            <a v-if="isWebUrl(source)" :href="source" target="_blank" rel="noopener noreferrer"
-              class="text-sm m-2 underline text-blue-600 hover:text-blue-800 visited:text-purple-600 break-all">
-              {{ source }}
-            </a>
-            <span v-else class="text-sm m-2 text-gray-700 break-all">{{ source }}</span>
-          </template>
         </el-row>
 
         <el-row align="middle"

@@ -72,7 +72,7 @@ export const generateQueryString = (lines: AdvancedSearchLine[]) => {
           lastOne = true;
         }
         let qq = '';
-        qq = `${f} : ${sg.searchInput} ${!lastOne ? 'OR' : ''} `;
+        qq = `${f}: (${sg.searchInput}) ${!lastOne ? 'OR' : ''} `;
         qqq += qq;
       });
       qS += `${qqq} ) ${!lastOneSG ? sg.operation : ''} `;
@@ -214,7 +214,7 @@ export const useSearch = (searchType: 'list' | 'map') => {
       if (advancedSearchEnabled.value) {
         searchInput.value = '';
       } else {
-        advancedSearchLines.value = [blankAdvancedSearchLine];
+        advancedSearchLines.value = [{ ...blankAdvancedSearchLine }];
       }
     }
   };
@@ -239,12 +239,7 @@ export const useSearch = (searchType: 'list' | 'map') => {
 
     const query = advancedSearchEnabled.value
       ? generateQueryString(
-          advancedSearchLines.value.map((l) => {
-            if (l.searchInput === '') {
-              l.searchInput = '*';
-            }
-            return l;
-          }),
+          advancedSearchLines.value.map((l) => (l.searchInput.trim() === '' ? { ...l, searchInput: '*' } : l)),
         )
       : searchInput.value.toString();
 
@@ -402,7 +397,7 @@ export const useSearch = (searchType: 'list' | 'map') => {
     searchInput.value = '';
     filters.value = {};
 
-    advancedSearchLines.value = [blankAdvancedSearchLine];
+    advancedSearchLines.value = [{ ...blankAdvancedSearchLine }];
 
     selectedOrder.value = defaultOrder;
     filterButton.value = [];

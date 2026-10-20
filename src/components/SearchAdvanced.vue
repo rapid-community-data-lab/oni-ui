@@ -36,7 +36,7 @@ const toggleShowQueryString = () => {
 };
 
 const addNewLine = () => {
-  localAdvancedSearchLines.value.push(blankAdvancedSearchLine);
+  localAdvancedSearchLines.value.push({ ...blankAdvancedSearchLine });
 };
 
 const removeLine = (index: number) => {

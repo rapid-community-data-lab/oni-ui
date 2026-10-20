@@ -15,6 +15,8 @@ const props = defineProps<{
 
 const { expand = [], byteFields = [], durationFields = [] } = ui.main;
 
+const linkFields = ['isBasedOn'];
+
 const testURL = (url: string) => {
   if (url?.startsWith?.('http')) {
     //TODO: make this a real url test
@@ -51,6 +53,9 @@ const derived = computed(() => {
     name = formatDuration(field);
   } else if (['string', 'number'].includes(typeof field)) {
     name = String(field);
+    if (linkFields.includes(title)) {
+      url = testURL(name);
+    }
   } else if (isIdentifier(field)) {
     identifier = first(field.name);
     name = first(field.value);

@@ -343,7 +343,7 @@
       "name": "Name",
       "description": "Description",
       "inLanguage": "Language",
-      "text": "Text"
+      "_text": "Text"
     },
     "mapConfig": {
       "boundingBox": {

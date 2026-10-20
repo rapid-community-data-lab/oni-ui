@@ -17,10 +17,8 @@ describe('EntitySummary template (regression)', () => {
     expect(src).toMatch(/<el-row align="middle" v-if="!searchResult">\s*<p[^>]*>\s*ID:/);
   });
 
-  it('renders Is Based On values as external links only for web URLs', () => {
-    expect(src).toMatch(/v-if="entity\.isBasedOn\?\.length"/);
-    expect(src).toMatch(/<a v-if="isWebUrl\(source\)" :href="source" target="_blank" rel="noopener noreferrer"/);
-    expect(src).toMatch(/const isWebUrl = \(value: string\) => \/\^https\?:\\\/\\\/\/i\.test\(value\)/);
+  it('leaves Is Based On to the index entry page instead of the search result card', () => {
+    expect(src).not.toMatch(/isBasedOn/);
   });
 
   it('shows document text snippets with highlighted keywords above the relevance score', () => {
